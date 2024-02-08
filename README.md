@@ -27,6 +27,18 @@ A HDMI-CEC and IR to MQTT bridge written in Python 3 for connecting your AV-devi
   * lirc + hardware to receive and send IR signals
   * python-lirc (https://pypi.python.org/pypi/python-lirc/)
 
+# Install on Raspbian bullseye
+
+```sh
+apt-get update
+apt-get install build-essential git python3 python3-dev python3-setuptools python3-pip python3-wheel python3-paho-mqtt python3-cec
+git clone https://github.com/michaelarnauts/cec-mqtt-bridge.git
+cd cec-mqtt-bridge/
+cp config.ini.default config.ini
+vi config.ini
+```
+
+
 # MQTT Topics
 
 The bridge subscribes to the following topics:
