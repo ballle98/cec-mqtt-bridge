@@ -8,7 +8,8 @@ import threading
 import time
 import paho.mqtt.client as mqtt
 
-from . import hdmicec, lirc
+import hdmicec 
+import lirc
 
 LOGGER = logging.getLogger('bridge')
 #logging.basicConfig(level=logging.INFO, format='%(asctime)s [%(name)s] %(funcName)s: %(message)s')
@@ -33,7 +34,10 @@ DEFAULT_CONFIGURATION = {
 class Bridge:
 
     def __init__(self):
-        self.config = self._load_config()
+        if (os.path.isfile('/etc/cec-mqtt-bridge.ini')):
+            self.config = self._load_config('/etc/cec-mqtt-bridge.ini')
+        else:
+            self.config = self._load_config()
 
         def mqtt_on_message(client: mqtt, userdata, message):
             """Run mqtt callback in a seperate thread."""

@@ -1,0 +1,13 @@
+[Unit]
+Description=cec-lirc HDMI CEC to IR remote bridge
+Wants=network-online.target
+After=network-online.target
+# After=lircd-tx.service
+# Wants=lircd-tx.socket
+
+[Service]
+Type=simple
+ExecStart=/usr/local/bin/cec-mqtt-bridge
+
+[Install]
+WantedBy=multi-user.target
