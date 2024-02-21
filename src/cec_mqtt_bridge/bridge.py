@@ -8,8 +8,8 @@ import threading
 import time
 import paho.mqtt.client as mqtt
 
-import hdmicec 
-import lirc
+from cec_mqtt_bridge import hdmicec
+from cec_mqtt_bridge import lirc
 
 LOGGER = logging.getLogger('bridge')
 #logging.basicConfig(level=logging.INFO, format='%(asctime)s [%(name)s] %(funcName)s: %(message)s')
