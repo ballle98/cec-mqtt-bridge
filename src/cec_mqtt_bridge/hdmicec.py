@@ -13,7 +13,7 @@ LOGGER = logging.getLogger(__name__)
 DEFAULT_CONFIGURATION = {
     'enabled': 0,
     'port': 'RPI',
-    'devices': '0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15',
+    'devices': '0,1,2,3,4,5,6,7,8,9,10,11,12,13,14',
     'name': 'CEC Bridge',
 }
 
@@ -23,7 +23,7 @@ class HdmiCec:
     def __init__(self, port: str, name: str, devices: List[int], mqtt_send: callable):
         self._mqtt_send = mqtt_send
         self.devices = devices
-        self.volume_correction = 0.8  # 80/100 = max volume of avr / reported max volume
+        self.volume_correction = 1  # 80/100 = max volume of avr / reported max volume
 
         self.setting_volume = False
         self.volume_update = threading.Event()
@@ -32,10 +32,12 @@ class HdmiCec:
         self.cec_config = cec.libcec_configuration()
         self.cec_config.strDeviceName = name
         self.cec_config.bActivateSource = 0
-        self.cec_config.deviceTypes.Add(cec.CEC_DEVICE_TYPE_RECORDING_DEVICE)
+        self.cec_config.deviceTypes.Add(cec.CEC_DEVICE_TYPE_PLAYBACK_DEVICE)
         self.cec_config.clientVersion = cec.LIBCEC_VERSION_CURRENT
         self.cec_config.SetLogCallback(self._on_log_callback)
-
+        self.cec_config.SetKeyPressCallback(self._on_key_press_callback)
+        self.cec_config.SetCommandCallback(self._on_command_callback)
+        
         # Open connection
         self.cec_client = cec.ICECAdapter.Create(self.cec_config)  # type: cec.ICECAdapter
         if not self.cec_client.Open(port):
@@ -61,30 +63,30 @@ class HdmiCec:
             if m:
                 self._mqtt_send('cec/rx', m.group(1))
 
-            # Report Power Status
+            # :TODO: move to on_command Report Power Status
             m = re.search('>> ([0-9a-f])[0-9a-f]:90:([0-9a-f]{2})', message)
             if m:
                 device = int(m.group(1), 16)
                 if (m.group(2) == '00') or (m.group(2) == '02'):
                     power = 'on'
                 else:
-                    power = 'off'
+                    power = 'standby'
                 self._mqtt_send('cec/power/%d/status' % device, power)
                 return
 
-            # Device Vendor ID
-            m = re.search('>> ([0-9a-f])[0-9a-f]:87', message)
-            if m:
-                device = int(m.group(1), 16)
-                self._mqtt_send('cec/power/%d/status' % device, 'on')
-                return
+            # # Device Vendor ID
+            # m = re.search('>> ([0-9a-f])[0-9a-f]:87', message)
+            # if m:
+            #     device = int(m.group(1), 16)
+            #     self._mqtt_send('cec/power/%d/status' % device, 'on')
+            #     return
 
-            # Report Physical Address
-            m = re.search('>> ([0-9a-f])[0-9a-f]:84', message)
-            if m:
-                device = int(m.group(1), 16)
-                self._mqtt_send('cec/power/%d/status' % device, 'on')
-                return
+            # # Report Physical Address
+            # m = re.search('>> ([0-9a-f])[0-9a-f]:84', message)
+            # if m:
+            #     device = int(m.group(1), 16)
+            #     self._mqtt_send('cec/power/%d/status' % device, 'on')
+            #     return
 
             # Report Audio Status
             m = re.search('>> ([0-9a-f])[0-9a-f]:7a:([0-9a-f]{2})', message)
@@ -96,6 +98,16 @@ class HdmiCec:
                 self.volume_update.set()  # notify we have a volume update
                 return
 
+    # key press callback
+    def _on_key_press_callback(self, key, duration):
+      LOGGER.info('_on_key_press_callback')
+      return self.cec_client.KeyPressCallback(key, duration)
+    
+    # command callback
+    def _on_command_callback(self, cmd):
+      LOGGER.info('_on_command_callback %s', cmd)
+      return self.cec_client.CommandCallback(cmd)
+
     def power_on(self, device: int):
         """Power on the specified device."""
         LOGGER.info('Power on device %d', device)
@@ -105,7 +117,7 @@ class HdmiCec:
     def power_off(self, device: int):
         """Power off the specified device."""
         LOGGER.info('Power off device %d', device)
-        self._mqtt_send('cec/power/%d/status' % device, 'off')
+        self._mqtt_send('cec/power/%d/status' % device, 'standby')
         self.cec_client.StandbyDevices(device)
 
     def volume_up(self, amount=1, update=True):
@@ -222,15 +234,23 @@ class HdmiCec:
 
     def refresh(self):
         """Refresh the audio status and power status."""
+        # :TODO: This operation takes ~2 sec should it be done in seperate thread
+        # :TODO: Should flag that refresh is happening and not do mqtt send here and in logger.
         if self.setting_volume:
             return
 
         LOGGER.info('Refreshing HDMI-CEC...')
-
         for device in self.devices:
-            # Ask device to send us an power status update
-            self.tx_command('8F', device=device)
-            time.sleep(2)
-
+            # Get power status values of discovered devices from ceclib
+            # This will setting unknown power state when device does not respond.
+            physicalAddress = self.cec_client.GetDevicePhysicalAddress(device)
+            if (physicalAddress != 0xFFFF) :
+                power = self.cec_client.GetDevicePowerStatus(device)
+                powerStr = self.cec_client.PowerStatusToString(power)
+                LOGGER.info('device %d %04x %-12s power %d %s', device, physicalAddress,
+                            self.cec_client.LogicalAddressToString(device), power,
+                            powerStr)
+                self._mqtt_send('cec/power/%d/status' % device, powerStr)
+        
         # Ask AVR to send us an audio status update
         self.tx_command('71', device=5)
