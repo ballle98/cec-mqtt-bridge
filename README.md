@@ -47,9 +47,10 @@ The bridge subscribes to the following topics:
 
 | topic                       | body                                    | remark                                                                    |
 |:----------------------------|-----------------------------------------|---------------------------------------------------------------------------|
-| `prefix`/cec/power/`id`/set | `on` / `off`                            | Turn on/off device with id `id`.                                          |
-| `prefix`/cec/volume/set     | `integer (0-127)` / `up` / `down`       | Sets the volume level of the audio system to a specific level or up/down. |
-| `prefix`/cec/mute/set       | `on` / `off`                            | Mute/Unmute the the audio system.                                         |
+| `prefix`/cec/device/`laddr`/power/set | `on` / `standby`              | Turn on/standby device with with logical address `laddr` (0-14).  |
+| `prefix`/cec/device/`laddr`/active/set | `yes` / `no`                 | Turn on/standby device with with logical address `laddr` (0-14).  |
+| `prefix`/cec/audio/volume/set     | `integer (0-100)` / `up` / `down` | Sets the volume level of the audio system to a specific level or up/down. |
+| `prefix`/cec/audio/mute/set       | `on` / `off`                      | Mute/Unmute the the audio system.                                         |
 | `prefix`/cec/tx             | `commands`                              | Send the specified `commands` to the CEC bus. You can specify multiple commands by separating them with a space. Example: `cec/tx 15:44:41,15:45`. |
 | `prefix`/ir/`remote`/tx     | `key`                                   | Send the specified `key` of `remote` to the IR transmitter.               |
 
@@ -57,9 +58,16 @@ The bridge publishes to the following topics:
 
 | topic                          | body                                    | remark                                           |
 |:-------------------------------|-----------------------------------------|--------------------------------------------------|
-| `prefix`/bridge/status         | `online` / `offline`                    | Report availability status of the bridge.        |
-| `prefix`/cec/power/`id`/status | `on` / `off`                            | Report power status of device with id `id`.      |
-| `prefix`/cec/volume/status     | `integer (0-127)`                       | Report volume level of the audio system.         |
+| `prefix`/bridge/status               | `online` / `offline`                    | Report availability status of the bridge.        |
+| `prefix`/cec/device/`laddr`/type     | `on` / `off`                            | Report type of device with logical address `laddr` (0-14).      |
+| `prefix`/cec/device/`laddr`/address  | `on` / `off`                            | Report physical address of device with logical address `laddr` (0-14).  |
+| `prefix`/cec/device/`laddr`/active   | `yes` / `no`                            | Report active source status of device with logical address `laddr` (0-14).  |
+| `prefix`/cec/device/`laddr`/vendor   | `string`                            | Report vendor of device with logical address `laddr` (0-14).  |
+| `prefix`/cec/device/`laddr`/osd      | `string`                            | Report OSD of device with logical address `laddr` (0-14).  |
+| `prefix`/cec/device/`laddr`/cecver   | `string`                            | Report CEC version of device with logical address `laddr` (0-14).  |
+| `prefix`/cec/device/`laddr`/power    | `on` / `standby` / `toon` / `tostandby` / `unknown` | Report power status of device with logical address `laddr` (0-14).      |
+| `prefix`/cec/device/`laddr`/language | `string`                            | Report langauge of device with logical address `laddr` (0-14).  |
+| `prefix`/cec/audio/volume     | `integer (0-100)` /  `unknown = 127`                      | Report volume level of the audio system.         |
 | `prefix`/cec/mute/status       | `on` / `off`                            | Report mute status of the audio system.          |
 | `prefix`/cec/rx                | `command`                               | Notify that `command` was received.              |
 | `prefix`/ir/`remote`/rx        | `key`                                   | Notify that `key` of `remote` was received. You have to configure `key` AND `remote` as config in the lircrc file.  |

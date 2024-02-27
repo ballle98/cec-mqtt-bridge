@@ -71,7 +71,7 @@ class HdmiCec:
                     power = 'on'
                 else:
                     power = 'standby'
-                self._mqtt_send('cec/power/%d/status' % device, power)
+                self._mqtt_send('cec/device/%d/power' % device, power)
                 return
 
             # # Device Vendor ID
@@ -93,8 +93,8 @@ class HdmiCec:
             if m:
                 audio_status = int(m.group(2), 16)
                 mute, volume = self.decode_volume(audio_status)
-                self._mqtt_send('cec/volume/status', volume)
-                self._mqtt_send('cec/mute/status', 'on' if mute else 'off')
+                self._mqtt_send('cec/audio/volume', volume)
+                self._mqtt_send('cec/audio/mute', 'on' if mute else 'off')
                 self.volume_update.set()  # notify we have a volume update
                 return
 
@@ -111,13 +111,13 @@ class HdmiCec:
     def power_on(self, device: int):
         """Power on the specified device."""
         LOGGER.info('Power on device %d', device)
-        self._mqtt_send('cec/power/%d/status' % device, 'on')
+        self._mqtt_send('cec/device/%d/power' % device, 'on')
         self.cec_client.PowerOnDevices(device)
 
     def power_off(self, device: int):
         """Power off the specified device."""
         LOGGER.info('Power off device %d', device)
-        self._mqtt_send('cec/power/%d/status' % device, 'standby')
+        self._mqtt_send('cec/device/%d/power' % device, 'standby')
         self.cec_client.StandbyDevices(device)
 
     def volume_up(self, amount=1, update=True):
@@ -157,13 +157,13 @@ class HdmiCec:
     def volume_mute(self):
         """Mute the volume on the AVR."""
         LOGGER.info('Mute AVR')
-        self._mqtt_send('cec/mute/status', 'on')
+        self._mqtt_send('cec/audio/mute', 'on')
         self.cec_client.AudioMute()
 
     def volume_unmute(self):
         """Unmute the volume on the AVR."""
         LOGGER.info('Unmute AVR')
-        self._mqtt_send('cec/mute/status', 'off')
+        self._mqtt_send('cec/audio/mute', 'off')
         self.cec_client.AudioUnmute()
 
     def volume_set(self, requested_volume: int):
@@ -214,7 +214,7 @@ class HdmiCec:
 
         self.setting_volume = False
 
-    def decode_volume(self, audio_status) -> (bool, int):
+    def decode_volume(self, audio_status) -> tuple[bool, int]:
         mute = audio_status > 127
         volume = audio_status - 128 if mute else audio_status
         real_volume = int(math.ceil(volume * self.volume_correction))
@@ -250,7 +250,7 @@ class HdmiCec:
                 LOGGER.debug('device %d %04x %-12s power %d %s', device, physicalAddress,
                             self.cec_client.LogicalAddressToString(device), power,
                             powerStr)
-                self._mqtt_send('cec/power/%d/status' % device, powerStr)
+                self._mqtt_send('cec/device/%d/power' % device, powerStr)
         
         # Ask AVR to send us an audio status update
         self.tx_command('71', device=5)

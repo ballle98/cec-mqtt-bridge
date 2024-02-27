@@ -99,9 +99,9 @@ class Bridge:
         # Subscribe to CEC commands
         if int(self.config['cec']['enabled']) == 1:
             client.subscribe([
-                (self.config['mqtt']['prefix'] + '/cec/power/+/set', 0),
-                (self.config['mqtt']['prefix'] + '/cec/volume/set', 0),
-                (self.config['mqtt']['prefix'] + '/cec/mute/set', 0),
+                (self.config['mqtt']['prefix'] + '/cec/device/+/power/set', 0),
+                (self.config['mqtt']['prefix'] + '/cec/audio/volume/set', 0),
+                (self.config['mqtt']['prefix'] + '/cec/audio/mute/set', 0),
                 (self.config['mqtt']['prefix'] + '/cec/tx', 0),
             ])
 
@@ -128,36 +128,38 @@ class Bridge:
 
         if topic[0] == 'cec':
 
-            if topic[1] == 'power':
+            if topic[1] == 'device':
                 device = int(topic[2])
-                if action == 'on':
-                    self.cec_class.power_on(device)
-                    return
-                if action == 'off':
-                    self.cec_class.power_off(device)
-                    return
-                raise Exception("Unknown power command: %s (%s)" % (topic, action))
+                if topic[3] == 'power':
+                    if action == 'on':
+                        self.cec_class.power_on(device)
+                        return
+                    if action == 'standby':
+                        self.cec_class.power_off(device)
+                        return
+                    raise Exception("Unknown power command: %s (%s)" % (topic, action))
 
-            if topic[1] == 'volume':
-                if action == 'up':
-                    self.cec_class.volume_up()
-                    return
-                if action == 'down':
-                    self.cec_class.volume_down()
-                    return
-                if action.isdigit() and int(action) <= 100:
-                    self.cec_class.volume_set(int(action))
-                    return
-                raise Exception("Unknown volume command: %s (%s)" % (topic, action))
+            if topic[1] == 'audio':
+                if topic[2] == 'volume':
+                    if action == 'up':
+                        self.cec_class.volume_up()
+                        return
+                    if action == 'down':
+                        self.cec_class.volume_down()
+                        return
+                    if action.isdigit() and int(action) <= 100:
+                        self.cec_class.volume_set(int(action))
+                        return
+                    raise Exception("Unknown volume command: %s (%s)" % (topic, action))
 
-            if topic[1] == 'mute':
-                if action == 'on':
-                    self.cec_class.volume_mute()
-                    return
-                if action == 'off':
-                    self.cec_class.volume_unmute()
-                    return
-                raise Exception("Unknown mute command: %s (%s)" % (topic, action))
+                if topic[2] == 'mute':
+                    if action == 'on':
+                        self.cec_class.volume_mute()
+                        return
+                    if action == 'off':
+                        self.cec_class.volume_unmute()
+                        return
+                    raise Exception("Unknown mute command: %s (%s)" % (topic, action))
 
             if topic[1] == 'tx':
                 commands = message.payload.decode().split(',')
