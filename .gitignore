@@ -2,3 +2,6 @@
 config.ini
 lircrc
 __pycache__
+/*.log
+/.project
+/.settings

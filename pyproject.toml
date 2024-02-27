@@ -20,5 +20,5 @@ cec-mqtt-bridge = "cec_mqtt_bridge.bridge:main"
 #cec-mqtt-create = "cec-mqtt-bridge.create_lircrc"
 
 [build-system]
-requires = ["setuptools>=61.0"]
-build-backend = "setuptools.build_meta"
+requires = ["hatchling"]
+build-backend = "hatchling.build"

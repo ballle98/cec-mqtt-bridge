@@ -100,12 +100,12 @@ class HdmiCec:
 
     # key press callback
     def _on_key_press_callback(self, key, duration):
-      LOGGER.info('_on_key_press_callback')
+      LOGGER.debug('_on_key_press_callback')
       return self.cec_client.KeyPressCallback(key, duration)
     
     # command callback
     def _on_command_callback(self, cmd):
-      LOGGER.info('_on_command_callback %s', cmd)
+      LOGGER.debug('_on_command_callback %s', cmd)
       return self.cec_client.CommandCallback(cmd)
 
     def power_on(self, device: int):
@@ -219,7 +219,7 @@ class HdmiCec:
         volume = audio_status - 128 if mute else audio_status
         real_volume = int(math.ceil(volume * self.volume_correction))
 
-        LOGGER.info('Audio Status = %s -> Mute = %s, Volume = %s, Real Volume = %s', audio_status, mute, volume, real_volume)
+        LOGGER.debug('Audio Status = %s -> Mute = %s, Volume = %s, Real Volume = %s', audio_status, mute, volume, real_volume)
         return mute, real_volume
 
     def tx_command(self, command: str, device: int = None):
@@ -239,7 +239,7 @@ class HdmiCec:
         if self.setting_volume:
             return
 
-        LOGGER.info('Refreshing HDMI-CEC...')
+        LOGGER.debug('Refreshing HDMI-CEC...')
         for device in self.devices:
             # Get power status values of discovered devices from ceclib
             # This will setting unknown power state when device does not respond.
@@ -247,7 +247,7 @@ class HdmiCec:
             if (physicalAddress != 0xFFFF) :
                 power = self.cec_client.GetDevicePowerStatus(device)
                 powerStr = self.cec_client.PowerStatusToString(power)
-                LOGGER.info('device %d %04x %-12s power %d %s', device, physicalAddress,
+                LOGGER.debug('device %d %04x %-12s power %d %s', device, physicalAddress,
                             self.cec_client.LogicalAddressToString(device), power,
                             powerStr)
                 self._mqtt_send('cec/power/%d/status' % device, powerStr)

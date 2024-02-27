@@ -7,13 +7,12 @@ import os
 import threading
 import time
 import paho.mqtt.client as mqtt
+import argparse
 
 from cec_mqtt_bridge import hdmicec
 from cec_mqtt_bridge import lirc
 
 LOGGER = logging.getLogger('bridge')
-#logging.basicConfig(level=logging.INFO, format='%(asctime)s [%(name)s] %(funcName)s: %(message)s')
-logging.basicConfig(level=logging.DEBUG, format='%(asctime)s [%(name)s] %(funcName)s: %(message)s')
 
 # Default configuration
 DEFAULT_CONFIGURATION = {
@@ -173,7 +172,15 @@ class Bridge:
         self.mqtt_client.disconnect()
 
 def main():
-
+    parser = argparse.ArgumentParser(description='HDMI-CEC and IR to MQTT bridge')
+    parser.add_argument('--verbose', '-v', action='count')
+    args = parser.parse_args()
+    if args.verbose:
+        print ("verbosity level = %d" % args.verbose)
+        logging.basicConfig(level=logging.DEBUG, format='%(asctime)s [%(name)s] %(funcName)s: %(message)s')
+    else:
+        logging.basicConfig(level=logging.INFO, format='%(asctime)s [%(name)s] %(funcName)s: %(message)s')
+        
     bridge = Bridge()
 
     try:
