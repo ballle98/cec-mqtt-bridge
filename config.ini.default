@@ -16,7 +16,7 @@
 ;password=
 
 ; MQTT prefix to use
-;prefix=m edia
+;prefix=cec-mqtt
 
 ; Name of your device (default=cec-ir-mqtt)
 ;name=cec-ir-mqtt
@@ -26,7 +26,7 @@
 ;
 [cec]
 ; Enable CEC
-;enabled=1
+enabled=1
 
 ; ID of CEC controller
 ;id=1

@@ -15,6 +15,7 @@ DEFAULT_CONFIGURATION = {
     'port': 'RPI',
     'devices': '0,1,2,3,4,5,6,7,8,9,10,11,12,13,14',
     'name': 'CEC Bridge',
+    'refresh': '10'
 }
 
 
@@ -26,13 +27,14 @@ class HdmiCec:
         self.volume_correction = 1  # 80/100 = max volume of avr / reported max volume
 
         self.setting_volume = False
+        self.refreshing = False
         self.volume_update = threading.Event()
         self.volume_update.clear()
 
         self.cec_config = cec.libcec_configuration()
         self.cec_config.strDeviceName = name
         self.cec_config.bActivateSource = 0
-        self.cec_config.deviceTypes.Add(cec.CEC_DEVICE_TYPE_PLAYBACK_DEVICE)
+        self.cec_config.deviceTypes.Add(cec.CEC_DEVICE_TYPE_RECORDING_DEVICE)
         self.cec_config.clientVersion = cec.LIBCEC_VERSION_CURRENT
         self.cec_config.SetLogCallback(self._on_log_callback)
         self.cec_config.SetKeyPressCallback(self._on_key_press_callback)
@@ -240,6 +242,7 @@ class HdmiCec:
             return
 
         LOGGER.debug('Refreshing HDMI-CEC...')
+        self.refreshing = True
         for device in self.devices:
             # Get power status values of discovered devices from ceclib
             # This will setting unknown power state when device does not respond.
@@ -253,4 +256,7 @@ class HdmiCec:
                 self._mqtt_send('cec/device/%d/power' % device, powerStr)
         
         # Ask AVR to send us an audio status update
-        self.tx_command('71', device=5)
+        mute, volume = self.decode_volume(self.cec_client.AudioStatus())
+        self._mqtt_send('cec/audio/volume', volume)
+        self._mqtt_send('cec/audio/mute', 'on' if mute else 'off')
+        self.refreshing = False

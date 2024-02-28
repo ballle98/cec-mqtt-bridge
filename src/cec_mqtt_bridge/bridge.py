@@ -32,11 +32,13 @@ DEFAULT_CONFIGURATION = {
 
 class Bridge:
 
-    def __init__(self):
-        if (os.path.isfile('/etc/cec-mqtt-bridge.ini')):
-            self.config = self._load_config('/etc/cec-mqtt-bridge.ini')
-        else:
-            self.config = self._load_config()
+    def __init__(self, config_file: str):
+        self.config = self._load_config(config_file)
+
+        # Do some checks
+        if (not int(self.config['cec']['enabled']) == 1) and \
+                (not int(self.config['ir']['enabled']) == 1):
+            raise Exception('IR and CEC are both disabled. Can\'t continue.')
 
         def mqtt_on_message(client: mqtt, userdata, message):
             """Run mqtt callback in a seperate thread."""
@@ -70,6 +72,7 @@ class Bridge:
     @staticmethod
     def _load_config(filename='config.ini'):
         config = DEFAULT_CONFIGURATION
+        LOGGER.info("Loading config %s", filename)
 
         try:
             # Load all sections and overwrite default configuration
@@ -87,11 +90,6 @@ class Bridge:
 
         except Exception as e:
             raise Exception("Could not configure: %s" % str(e))
-
-        # Do some checks
-        if (not int(config['cec']['enabled']) == 1) and \
-                (not int(config['ir']['enabled']) == 1):
-            raise Exception('IR and CEC are both disabled. Can\'t continue.')
 
         return config
 
@@ -175,24 +173,43 @@ class Bridge:
 
 def main():
     parser = argparse.ArgumentParser(description='HDMI-CEC and IR to MQTT bridge')
-    parser.add_argument('--verbose', '-v', action='count')
-    args = parser.parse_args()
-    if args.verbose:
-        print ("verbosity level = %d" % args.verbose)
-        logging.basicConfig(level=logging.DEBUG, format='%(asctime)s [%(name)s] %(funcName)s: %(message)s')
-    else:
-        logging.basicConfig(level=logging.INFO, format='%(asctime)s [%(name)s] %(funcName)s: %(message)s')
-        
-    bridge = Bridge()
+    parser.add_argument('-v', '--verbose', action='count', help="increase output verbosity")
+    parser.add_argument('-f', '--configfile')
+    parser.add_argument('-c', '--cec', action="store_true", help="enable CEC")
+    parser.add_argument('-i', '--ir', action="store_true", help="enable IR")
+    parser.add_argument('-t', '--refreshtime', type=int)
 
+    args = parser.parse_args()
+    log_level = logging.INFO
+    if args.verbose:
+        log_level = logging.DEBUG
+
+    logging.basicConfig(level=log_level, format='%(asctime)s [%(name)s] %(funcName)s: %(message)s')
+
+    if args.configfile:
+        config_file = args.configfile
+    elif (os.path.isfile('/etc/cec-mqtt-bridge.ini')):
+        config_file = '/etc/cec-mqtt-bridge.ini'
+    else:
+        config_file = 'config.ini'
+    
+    bridge = Bridge(config_file)
+
+    if args.refreshtime is not None:
+        bridge.config['cec']['refresh'] = str(args.refreshtime)
+
+    refresh_delay = int(bridge.config['cec']['refresh'])
+    if (refresh_delay > 0 ) and (refresh_delay < 10):
+        refresh_delay = 10
+    
+    LOGGER.info("refresh delay %d", refresh_delay)
+    
     try:
         while True:
             # Refresh CEC state
-            if bridge.cec_class:
+            if bridge.cec_class and refresh_delay:
                 bridge.cec_class.refresh()
-
-            # Refresh every 10 seconds
-            time.sleep(10)
+                time.sleep(refresh_delay)
 
     except KeyboardInterrupt:
         bridge.cleanup()
