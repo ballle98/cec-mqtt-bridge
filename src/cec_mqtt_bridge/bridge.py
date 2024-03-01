@@ -101,6 +101,8 @@ class Bridge:
                 (self.config['mqtt']['prefix'] + '/cec/audio/volume/set', 0),
                 (self.config['mqtt']['prefix'] + '/cec/audio/mute/set', 0),
                 (self.config['mqtt']['prefix'] + '/cec/tx', 0),
+                (self.config['mqtt']['prefix'] + '/cec/refresh', 0),
+                (self.config['mqtt']['prefix'] + '/cec/scan', 0)
             ])
 
         # Subscribe to IR commands
@@ -112,7 +114,7 @@ class Bridge:
         # Publish birth message
         self.mqtt_publish('bridge/status', 'online', qos=1, retain=True)
 
-    def mqtt_publish(self, topic, message=None, qos=0, retain=False):
+    def mqtt_publish(self, topic, message=None, qos=0, retain=True):
         """Publish a MQTT message"""
         LOGGER.debug('Send to topic %s: %s', topic, message)
         self.mqtt_client.publish(self.config['mqtt']['prefix'] + '/' + topic, message, qos=qos, retain=retain)
@@ -163,6 +165,14 @@ class Bridge:
                 commands = message.payload.decode().split(',')
                 for command in commands:
                     self.cec_class.tx_command(command)
+                return
+            
+            if topic[1] == 'refresh':
+                self.cec_class.refresh()
+                return
+
+            if topic[1] == 'scan':
+                self.cec_class.scan()
                 return
 
     def cleanup(self):

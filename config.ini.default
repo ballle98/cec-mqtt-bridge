@@ -40,6 +40,9 @@ enabled=1
 ; Name of your device (default=cec-ir-mqtt)
 ;name=OSMC
 
+; device power state refresh time in seconds (default=10) (min 10) (0 disables refresh)
+;refresh=10
+
 ;
 ; LIRC configuration
 ;
