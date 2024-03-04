@@ -220,6 +220,8 @@ def main():
             if bridge.cec_class and refresh_delay:
                 bridge.cec_class.refresh()
                 time.sleep(refresh_delay)
+            else:
+                time.sleep(3600)
 
     except KeyboardInterrupt:
         bridge.cleanup()
