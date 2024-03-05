@@ -119,7 +119,7 @@ end
 # Interesting links
 * https://github.com/nvella/mqtt-cec
 * http://www.cec-o-matic.com/
-* http://wiki.kwikwai.com/index.php?title=The_HDMI-CEC_bus
+* https://kwikwai.com/knowledge-base/the-hdmi-cec-bus/
 * https://www.hdmi.org/docs/Hdmi13aSpecs
 * https://github.com/Pulse-Eight/libcec/blob/master/include/cec.h
 * https://github.com/Pulse-Eight/libcec/blob/master/src/pyCecClient/pyCecClient.py
