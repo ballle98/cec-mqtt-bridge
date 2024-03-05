@@ -34,10 +34,16 @@ apt-get update
 apt-get install build-essential git lirc python3 python3-dev python3-setuptools python3-pip python3-wheel python3-build python3-venv python3-paho-mqtt python3-cec
 git clone https://github.com/michaelarnauts/cec-mqtt-bridge.git
 cd cec-mqtt-bridge/
-python3 -m build
-sudo pip install dist/cec_mqtt_bridge-*.whl
-cp config.ini.default config.ini
-vi config.ini
+./contrib/debian-ubuntu-install.sh
+sudo vi /etc/cec-mqtt-bridge.ini
+```
+
+to update 
+
+```sh
+cd cec-mqtt-bridge/
+git pull
+sudo pip install .
 ```
 
 
