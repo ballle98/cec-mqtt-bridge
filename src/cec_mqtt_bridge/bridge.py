@@ -124,7 +124,7 @@ class Bridge:
         # Decode topic and split off the prefix
         topic = message.topic.replace(self.config['mqtt']['prefix'], '').split('/')[1:]
         action = message.payload.decode()
-        LOGGER.info("Command received: %s (%s)" % (topic, message.payload))
+        LOGGER.debug("Command received: %s (%s)" % (topic, message.payload))
 
         if topic[0] == 'cec':
 
@@ -212,7 +212,7 @@ def main():
     if (refresh_delay > 0 ) and (refresh_delay < 10):
         refresh_delay = 10
     
-    LOGGER.info("refresh delay %d", refresh_delay)
+    LOGGER.debug("refresh delay %d", refresh_delay)
     
     try:
         while True:

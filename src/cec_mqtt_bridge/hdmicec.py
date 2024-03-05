@@ -113,25 +113,25 @@ class HdmiCec:
 
     def power_on(self, device: int):
         """Power on the specified device."""
-        LOGGER.info('Power on device %d', device)
+        LOGGER.debug('Power on device %d', device)
         self._mqtt_send('cec/device/%d/power' % device, 'on')
         self.cec_client.PowerOnDevices(device)
 
     def power_off(self, device: int):
         """Power off the specified device."""
-        LOGGER.info('Power off device %d', device)
+        LOGGER.debug('Power off device %d', device)
         self._mqtt_send('cec/device/%d/power' % device, 'standby')
         self.cec_client.StandbyDevices(device)
 
     def volume_up(self, amount=1, update=True):
         """Increase the volume on the AVR."""
         if amount >= 10:
-            LOGGER.info('Volume up fast with %d', amount)
+            LOGGER.debug('Volume up fast with %d', amount)
             for i in range(amount):
                 self.cec_client.VolumeUp(i == amount - 1)
                 time.sleep(0.1)
         else:
-            LOGGER.info('Volume up with %d', amount)
+            LOGGER.debug('Volume up with %d', amount)
             for i in range(amount):
                 self.cec_client.VolumeUp()
                 time.sleep(0.1)
@@ -143,12 +143,12 @@ class HdmiCec:
     def volume_down(self, amount=1, update=True):
         """Decrease the volume on the AVR."""
         if amount >= 10:
-            LOGGER.info('Volume down fast with %d', amount)
+            LOGGER.debug('Volume down fast with %d', amount)
             for i in range(amount):
                 self.cec_client.VolumeDown(i == amount - 1)
                 time.sleep(0.1)
         else:
-            LOGGER.info('Volume down with %d', amount)
+            LOGGER.debug('Volume down with %d', amount)
             for i in range(amount):
                 self.cec_client.VolumeDown()
                 time.sleep(0.1)
@@ -159,19 +159,19 @@ class HdmiCec:
 
     def volume_mute(self):
         """Mute the volume on the AVR."""
-        LOGGER.info('Mute AVR')
+        LOGGER.debug('Mute AVR')
         self._mqtt_send('cec/audio/mute', 'on')
         self.cec_client.AudioMute()
 
     def volume_unmute(self):
         """Unmute the volume on the AVR."""
-        LOGGER.info('Unmute AVR')
+        LOGGER.debug('Unmute AVR')
         self._mqtt_send('cec/audio/mute', 'off')
         self.cec_client.AudioUnmute()
 
     def volume_set(self, requested_volume: int):
         """Set the volume to the AVR."""
-        LOGGER.info('Set volume to %d', requested_volume)
+        LOGGER.debug('Set volume to %d', requested_volume)
         self.setting_volume = True
 
         attempts = 0
