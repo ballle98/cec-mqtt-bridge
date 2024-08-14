@@ -12,8 +12,8 @@ classifiers = [
 ]
 
 [project.urls]
-Homepage = "https://github.com/pypa/sampleproject"
-Issues = "https://github.com/pypa/sampleproject/issues"
+Homepage = "https://github.com/ballle98/cec-mqtt-bridge"
+Issues = "https://github.com/ballle98/cec-mqtt-bridge/issues"
 
 [project.scripts]
 cec-mqtt-bridge = "cec_mqtt_bridge.bridge:main"
