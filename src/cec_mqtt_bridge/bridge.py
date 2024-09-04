@@ -32,8 +32,8 @@ DEFAULT_CONFIGURATION = {
 
 class Bridge:
 
-    def __init__(self, config_file: str):
-        self.config = self._load_config(config_file)
+    def __init__(self, config: dict):
+        self.config = config
 
         # Do some checks
         if (not int(self.config['cec']['enabled']) == 1) and \
@@ -60,6 +60,7 @@ class Bridge:
 
         # Setup HDMI-CEC
         if int(self.config['cec']['enabled']) == 1:
+            LOGGER.info("Initialising CEC...")
             self.cec_class = hdmicec.HdmiCec(port=self.config['cec']['port'],
                                              name=self.config['cec']['name'],
                                              devices=[int(x) for x in self.config['cec']['devices'].split(',')],
@@ -67,7 +68,8 @@ class Bridge:
 
         # Setup IR
         if int(self.config['ir']['enabled']) == 1:
-            self.ir_class = lirc.Lirc(mqtt_send=self.mqtt_publish)
+            LOGGER.info("Initialising IR...")
+            self.ir_class = lirc.Lirc(self.mqtt_publish, self.config['ir'])
 
     @staticmethod
     def _load_config(filename='config.ini'):
@@ -174,9 +176,18 @@ class Bridge:
             if topic[1] == 'scan':
                 self.cec_class.scan()
                 return
+            
+        elif topic[0] == 'ir':
+            if topic[2] == 'tx':
+                self.ir_class.ir_send(topic[1], action)
+
 
     def cleanup(self):
         """Terminates the connection."""
+        if int(self.config['ir']['enabled']) == 1:
+            LOGGER.info("Cleanup IR...")
+            self.ir_class.stop_event.set()
+            self.ir_class.lirc_thread.join()
         self.mqtt_client.loop_stop()
         self.mqtt_publish('bridge/status', 'offline', qos=1, retain=True)
         self.mqtt_client.disconnect()
@@ -203,10 +214,17 @@ def main():
     else:
         config_file = 'config.ini'
     
-    bridge = Bridge(config_file)
+    config = Bridge._load_config(config_file)
+    if args.cec:
+        config['cec']['enabled'] = 1
+
+    if args.ir:
+        config['ir']['enabled'] = 1
 
     if args.refreshtime is not None:
-        bridge.config['cec']['refresh'] = str(args.refreshtime)
+        config['cec']['refresh'] = str(args.refreshtime)
+
+    bridge = Bridge(config)
 
     refresh_delay = int(bridge.config['cec']['refresh'])
     if (refresh_delay > 0 ) and (refresh_delay < 10):
@@ -217,7 +235,7 @@ def main():
     try:
         while True:
             # Refresh CEC state
-            if bridge.cec_class and refresh_delay:
+            if (int(bridge.config['cec']['enabled']) == 1) and bridge.cec_class and refresh_delay:
                 bridge.cec_class.refresh()
                 time.sleep(refresh_delay)
             else:

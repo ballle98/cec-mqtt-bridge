@@ -49,3 +49,5 @@ enabled=1
 [ir]
 ; Enable LIRC
 ;enabled=1
+rx_sock_path=/var/run/lirc/lircd
+tx_sock_path=/var/run/lirc/lircd-tx
