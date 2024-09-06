@@ -55,7 +55,27 @@ class Bridge:
         if int(self.config['mqtt']['tls']) == 1:
             self.mqtt_client.tls_set()
         self.mqtt_client.will_set(self.config['mqtt']['prefix'] + '/bridge/status', 'offline', qos=1, retain=True)
-        self.mqtt_client.connect(self.config['mqtt']['broker'], int(self.config['mqtt']['port']), 60)
+
+        tries = 30
+        while tries > 0:
+            tries -= 1
+            try:
+                self.mqtt_client.connect(self.config['mqtt']['broker'], int(self.config['mqtt']['port']), 60)
+                break
+            except ConnectionRefusedError:
+                LOGGER.error("Connection was refused by the server")
+            except OSError as e:
+                LOGGER.error("OS error: %s", str(e))
+            except Exception as e:
+                LOGGER.error("Unexpected error: %s", str(e))
+
+            if tries > 0:
+                LOGGER.debug("Retrying in 10 seconds... (%d tries left)", tries)
+                time.sleep(10)
+        else:
+            LOGGER.error("Failed to connect to the MQTT broker after multiple attempts")
+            raise Exception('MQTT connect retries exhausted. Can\'t continue.')
+
         self.mqtt_client.loop_start()
 
         # Setup HDMI-CEC
@@ -96,6 +116,11 @@ class Bridge:
         return config
 
     def mqtt_on_connect(self, client: mqtt, userdata, flags, rc):
+        if rc == 0:
+            LOGGER.info("Connected successfully")
+        else:
+            LOGGER.error("Connection failed with code %d", rc)
+
         # Subscribe to CEC commands
         if int(self.config['cec']['enabled']) == 1:
             client.subscribe([
@@ -115,6 +140,7 @@ class Bridge:
 
         # Publish birth message
         self.mqtt_publish('bridge/status', 'online', qos=1, retain=True)
+
 
     def mqtt_publish(self, topic, message=None, qos=0, retain=True):
         """Publish a MQTT message"""
