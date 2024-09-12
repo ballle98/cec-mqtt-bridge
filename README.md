@@ -32,6 +32,7 @@ A HDMI-CEC and IR to MQTT bridge written in Python 3 for connecting your AV-devi
   * lirc with python bindings (https://www.lirc.org/api-docs/html/group__python__bindings.html)
   * **NOTE: lirc python package is not available on pypi**
     * "apt-get install lirc"
+    * "sudo pip install /usr/share/lirc/lirc-*.tar.gz" see #18
     * OR compile & install https://sourceforge.net/p/lirc/git/ci/master/tree/python-pkg/
 
 * lircd + hardware to receive and send IR signals
@@ -49,6 +50,7 @@ Install python dev packages, lirc, cec & paho-mqtt modules
 ```sh
 sudo apt-get update
 sudo apt-get install build-essential git lirc python3 python3-dev python3-setuptools python3-pip python3-wheel python3-build python3-venv python3-paho-mqtt python3-cec
+sudo pip install /usr/share/lirc/lirc-*.tar.gz
 git clone https://github.com/michaelarnauts/cec-mqtt-bridge.git
 cd cec-mqtt-bridge/
 ./contrib/debian-ubuntu-install.sh
