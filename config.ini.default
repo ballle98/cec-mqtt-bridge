@@ -31,8 +31,12 @@ enabled=1
 ; ID of CEC controller
 ;id=1
 
-; Port where the CEC-device is connected
+; Port where the CEC-device is connected (use cec-client -l to list)
+; if using fkms in /boot/config.txt
 ;port=RPI
+; if using kms in /boot/config.txt
+;port=/dev/cec0
+;port=/dev/cec1
 
 ; Devices to query (comma seperated, defaults to all devices)
 ;devices=0,2,3,4,5

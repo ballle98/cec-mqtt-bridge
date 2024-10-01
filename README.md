@@ -74,7 +74,7 @@ The bridge subscribes to the following topics:
 | topic                       | body                                    | remark                                                                    |
 |:----------------------------|-----------------------------------------|---------------------------------------------------------------------------|
 | `prefix`/cec/device/`laddr`/power/set | `on` / `standby`              | Turn on/standby device with with logical address `laddr` (0-14).  |
-| `prefix`/cec/device/`laddr`/active/set | `yes` / `no`                 | Turn on/standby device with with logical address `laddr` (0-14).  |
+| `prefix`/cec/device/`laddr`/active/set | `yes` / `no`                 | activate/deactivate device with with logical address `laddr` (0-14).  |
 | `prefix`/cec/audio/volume/set     | `integer (0-100)` / `up` / `down` | Sets the volume level of the audio system to a specific level or up/down. |
 | `prefix`/cec/audio/mute/set       | `on` / `off`                      | Mute/Unmute the the audio system.                                         |
 | `prefix`/cec/tx             | `commands`                              | Send the specified `commands` to the CEC bus. You can specify multiple commands by separating them with a space. Example: `cec/tx 15:44:41,15:45`. |

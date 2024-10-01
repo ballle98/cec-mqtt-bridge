@@ -7,6 +7,7 @@ import math
 import re
 import threading
 import time
+import os
 from typing import List
 import cec
 
@@ -14,7 +15,7 @@ LOGGER = logging.getLogger(__name__)
 
 DEFAULT_CONFIGURATION = {
     'enabled': 0,
-    'port': 'RPI',
+    'port': '',
     'devices': '0,1,2,3,4,5,6,7,8,9,10,11,12,13,14',
     'name': 'CEC Bridge',
     'refresh': '10'
@@ -44,8 +45,15 @@ class HdmiCec:
 
         # Open connection
         self.cec_client = cec.ICECAdapter.Create(self.cec_config)  # type: cec.ICECAdapter
+        if not port:
+            if os.path.exists('/dev/cec0'):
+                port = '/dev/cec0'
+            else:
+                port = 'RPI'
+
+        LOGGER.info('Opening HDMI-CEC device %s', port)
         if not self.cec_client.Open(port):
-            raise ConnectionError("Could not connect to CEC adapter")
+            raise ConnectionError(f"Could not connect to CEC adapter {port}")
 
         self.device_id = self.cec_client.GetLogicalAddresses().primary
         LOGGER.info('Connected to HDMI-CEC with ID %d', self.device_id)
