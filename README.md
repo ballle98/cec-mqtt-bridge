@@ -46,14 +46,20 @@ If there is not a MQTT broker already on your network
 sudo apt-get install mosquitto
 ```
 
-Install python dev packages, lirc, cec & paho-mqtt modules
+Install packages and the bridge
 ```sh
+# Base packages
 sudo apt-get update
-sudo apt-get install build-essential git lirc python3 python3-dev python3-setuptools python3-pip python3-wheel python3-build python3-venv python3-paho-mqtt python3-cec
+sudo apt-get install build-essential git python3 python3-dev python3-setuptools python3-pip python3-wheel python3-build python3-venv python3-paho-mqtt python3-cec
+
+# Optional: LIRC support (includes build helper for source installs)
+sudo apt-get install lirc liblirc-dev liblircclient-dev pkg-config
 sudo pip install /usr/share/lirc/lirc-*.tar.gz
+
+# Install the bridge
 git clone https://github.com/ballle98/cec-mqtt-bridge.git
-cd cec-mqtt-bridge/
-./contrib/debian-ubuntu-install.sh
+cd cec-mqtt-bridge/contrib/
+./debian-ubuntu-install.sh
 sudo vi /etc/cec-mqtt-bridge.ini
 sudo systemctl restart cec-mqtt-bridge
 ```

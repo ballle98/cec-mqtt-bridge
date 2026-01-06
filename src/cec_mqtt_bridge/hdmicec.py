@@ -9,7 +9,10 @@ import threading
 import time
 import os
 from typing import List
-import cec
+try:
+    import cec
+except ModuleNotFoundError:
+    cec = None
 
 LOGGER = logging.getLogger(__name__)
 
@@ -25,6 +28,8 @@ DEFAULT_CONFIGURATION = {
 class HdmiCec:
     """HDMI CEC interface class"""
     def __init__(self, port: str, name: str, devices: List[int], mqtt_send: callable):
+        if cec is None:
+            raise RuntimeError("CEC support is not available (python-cec not installed).")
         self._mqtt_send = mqtt_send
         self.devices = devices
         self.volume_correction = 1  # 80/100 = max volume of avr / reported max volume

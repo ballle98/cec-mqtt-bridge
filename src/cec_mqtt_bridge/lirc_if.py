@@ -3,7 +3,10 @@
 """lirc interface to HDMI CEC MQTT bridge"""
 import logging
 import threading
-import lirc
+try:
+    import lirc
+except ModuleNotFoundError:
+    lirc = None
 
 LOGGER = logging.getLogger(__name__)
 
@@ -18,6 +21,8 @@ class Lirc:
     """lirc IR interface class"""
 
     def __init__(self, mqtt_send, config: dict):
+        if lirc is None:
+            raise RuntimeError("IR support is not available (python-lirc not installed).")
         self._config = config
         self._mqtt_send = mqtt_send
         self.stop_event = threading.Event()

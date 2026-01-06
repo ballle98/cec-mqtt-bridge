@@ -2,30 +2,30 @@
 ; MQTT broker configuration
 ;
 [mqtt]
-; Hostname of mqtt broker (required)
+; Hostname of mqtt broker (default=localhost)
 ;broker=localhost
 
 ; Port to connect to (default=1883)
 ;port=1883
 
-; Use TLS
+; Use TLS (default=0)
 ;tls=0
 
 ; Username and password
 ;user=
 ;password=
 
-; MQTT prefix to use
+; MQTT prefix to use (default=media)
 ;prefix=cec-mqtt
 
-; Name of your device (default=cec-ir-mqtt)
+; Name of your device (default=CEC Bridge)
 ;name=cec-ir-mqtt
 
 ;
 ; HDMI-CEC configuration
 ;
 [cec]
-; Enable CEC
+; Enable CEC (default=0)
 enabled=1
 
 ; ID of CEC controller
@@ -41,7 +41,7 @@ enabled=1
 ; Devices to query (comma seperated, defaults to all devices)
 ;devices=0,2,3,4,5
 
-; Name of your device (default=cec-ir-mqtt)
+; Name of your device (default=CEC Bridge)
 ;name=OSMC
 
 ; device power state refresh time in seconds (default=10) (min 10) (0 disables refresh)
@@ -51,7 +51,7 @@ enabled=1
 ; LIRC configuration
 ;
 [ir]
-; Enable LIRC
+; Enable LIRC (default=0)
 ;enabled=1
 rx_sock_path=/var/run/lirc/lircd
 tx_sock_path=/var/run/lirc/lircd-tx
